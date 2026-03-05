@@ -10,7 +10,7 @@ func GetTransparentContext(ctx context.Context) TransparentContext {
 		return nil
 	}
 
-	if val, ok := ctx.Value(TransParentCtxKey).(TransparentContext); ok {
+	if val, ok := ctx.Value(TransParentCtx{}).(TransparentContext); ok {
 		return val
 	}
 
@@ -23,7 +23,7 @@ func WithTransparentContext(ctx context.Context, tc TransparentContext) context.
 		ctx = context.Background()
 	}
 
-	return context.WithValue(ctx, TransParentCtxKey, tc)
+	return context.WithValue(ctx, TransParentCtx{}, tc)
 }
 
 /* 根据metadata，创建新的带透传上下文的context */

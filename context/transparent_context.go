@@ -88,8 +88,7 @@ func (d *defaultTransparentContext) GetReqAll() map[string]string {
 
 func (d *defaultTransparentContext) GetReqAllByKey(subKey string) string {
 	// 使用http.CanonicalHeaderKey方法标准化key
-	wholeKey := fmt.Sprintf("%s%s", REQ_ALL_PREFIX, subKey)
-	normalWholeKey := http.CanonicalHeaderKey(wholeKey)
+	normalWholeKey := d.formatKeyByPrefix(REQ_ALL_PREFIX, subKey)
 
 	d.rwMutex.RLock()
 	defer d.rwMutex.RUnlock()
@@ -103,8 +102,7 @@ func (d *defaultTransparentContext) GetReqAllByKey(subKey string) string {
 
 func (d *defaultTransparentContext) SetReqAllByKey(subKey string, value string) {
 	// 使用http.CanonicalHeaderKey方法标准化key
-	wholeKey := fmt.Sprintf("%s%s", REQ_ALL_PREFIX, subKey)
-	normalWholeKey := http.CanonicalHeaderKey(wholeKey)
+	normalWholeKey := d.formatKeyByPrefix(REQ_ALL_PREFIX, subKey)
 
 	d.rwMutex.Lock()
 	defer d.rwMutex.Unlock()
@@ -140,8 +138,7 @@ func (d *defaultTransparentContext) GetReqOnce() map[string]string {
 }
 
 func (d *defaultTransparentContext) GetReqOnceByKey(subKey string) string {
-	wholeKey := fmt.Sprintf("%s%s", REQ_ONCE_PREFIX, subKey)
-	normalWholeKey := http.CanonicalHeaderKey(wholeKey)
+	normalWholeKey := d.formatKeyByPrefix(REQ_ONCE_PREFIX, subKey)
 
 	d.rwMutex.RLock()
 	defer d.rwMutex.RUnlock()
@@ -160,8 +157,7 @@ func (d *defaultTransparentContext) GetReqOnceByKey(subKey string) string {
 }
 
 func (d *defaultTransparentContext) SetReqOnceByKey(subKey string, value string) {
-	wholeKey := fmt.Sprintf("%s%s", REQ_ONCE_PREFIX, subKey)
-	normalWholeKey := http.CanonicalHeaderKey(wholeKey)
+	normalWholeKey := d.formatKeyByPrefix(REQ_ONCE_PREFIX, subKey)
 
 	d.rwMutex.Lock()
 	defer d.rwMutex.Unlock()
@@ -187,8 +183,7 @@ func (d *defaultTransparentContext) GetRespAll() map[string]string {
 }
 
 func (d *defaultTransparentContext) GetRespAllByKey(subKey string) string {
-	wholeKey := fmt.Sprintf("%s%s", RESP_ALL_PREFIX, subKey)
-	normalWholeKey := http.CanonicalHeaderKey(wholeKey)
+	normalWholeKey := d.formatKeyByPrefix(RESP_ALL_PREFIX, subKey)
 
 	d.rwMutex.RLock()
 	defer d.rwMutex.RUnlock()
@@ -238,8 +233,7 @@ func (d *defaultTransparentContext) GetRespOnce() map[string]string {
 }
 
 func (d *defaultTransparentContext) GetRespOnceByKey(subKey string) string {
-	wholeKey := fmt.Sprintf("%s%s", RESP_ONCE_PREFIX, subKey)
-	normalWholeKey := http.CanonicalHeaderKey(wholeKey)
+	normalWholeKey := d.formatKeyByPrefix(RESP_ONCE_PREFIX, subKey)
 
 	d.rwMutex.RLock()
 	defer d.rwMutex.RUnlock()
@@ -258,8 +252,7 @@ func (d *defaultTransparentContext) GetRespOnceByKey(subKey string) string {
 }
 
 func (d *defaultTransparentContext) SetRespOnceByKey(subKey string, value string) {
-	wholeKey := fmt.Sprintf("%s%s", RESP_ONCE_PREFIX, subKey)
-	normalWholeKey := http.CanonicalHeaderKey(wholeKey)
+	normalWholeKey := d.formatKeyByPrefix(RESP_ONCE_PREFIX, subKey)
 
 	d.rwMutex.Lock()
 	defer d.rwMutex.Unlock()
@@ -359,4 +352,8 @@ func (d *defaultTransparentContext) InjectToRespMetadata() map[string]string {
 	}
 
 	return metadata
+}
+
+func (d *defaultTransparentContext) formatKeyByPrefix(prefix, key string) string {
+	return http.CanonicalHeaderKey(fmt.Sprintf("%s%s", prefix, key))
 }

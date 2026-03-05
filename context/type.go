@@ -7,6 +7,4 @@ const (
 	RESP_ONCE_PREFIX = "Resp-Once-"
 )
 
-type TransparentContextKey string
-
-var TransParentCtxKey TransparentContextKey = "transparent_context_key"
+type TransParentCtx struct{}
