@@ -7,4 +7,4 @@ const (
 	RESP_ONCE_PREFIX = "Resp-Once-"
 )
 
-type TransParentCtx struct{}
+type transParentCtx struct{}
