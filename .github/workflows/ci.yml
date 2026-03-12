@@ -5,7 +5,7 @@ on: push
 jobs:
   test:
     name: 测试透传上下文
-    runs-on: centos-7 # 运行在centos7上
+    runs-on: ubuntu-latest # 运行在ubuntu最新版本上
     
     steps:
       - name: 读取仓库代码
