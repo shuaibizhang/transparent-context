@@ -1,0 +1,23 @@
+# 时机，push代码
+on: push
+
+# 执行jobs
+jobs:
+  test:
+    name: 测试透传上下文
+    runs-on: ubuntu-latest # 运行在ubuntu最新版本上
+    
+    steps:
+      - name: 读取仓库代码
+        uses: actions/checkout@v3
+      
+      - name: 设置go版本
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.23
+      
+      - name: 安装依赖
+        run: go mod tidy
+      
+      - name: 执行测试验证上下文透传逻辑
+        run: cd demo && go test -v ./e2e_test.go
