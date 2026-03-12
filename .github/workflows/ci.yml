@@ -1,0 +1,17 @@
+# 时机，push代码
+on: push
+
+# 执行jobs
+jobs:
+  test:
+    runs-on: centos-7 # 运行在centos7上
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.23
+      - name: Go Module Download
+        run: go mod tidy
+      - name: Test
+        run: cd demo && go test -v ./e2e_test.go
