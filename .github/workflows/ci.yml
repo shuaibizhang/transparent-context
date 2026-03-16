@@ -1,5 +1,5 @@
-# 时机，push代码
-on: push
+# 时机，发起pr的时候
+on: pull_request
 
 # 执行jobs
 jobs:
