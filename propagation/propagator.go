@@ -14,86 +14,71 @@ type Propagator interface {
 	Extract(ctx context.Context, carrier MetadataCarrier) (context.Context, error)
 }
 
+// NewRequestPropagator 创建请求方向的传播者
 func NewRequestPropagator() Propagator {
-	return &requestPropagator{}
+	return &basePropagator{
+		inject: func(tc transparentconetext.TransparentContext) map[string]string {
+			return tc.InjectToReqMetadata()
+		},
+		extract: func(tc transparentconetext.TransparentContext, metaData map[string]string) {
+			tc.LoadFromReqMetadata(metaData)
+		},
+	}
 }
 
+// NewResponsePropagator 创建响应方向的传播者
 func NewResponsePropagator() Propagator {
-	return &responsePropagator{}
+	return &basePropagator{
+		inject: func(tc transparentconetext.TransparentContext) map[string]string {
+			return tc.InjectToRespMetadata()
+		},
+		extract: func(tc transparentconetext.TransparentContext, metaData map[string]string) {
+			tc.LoadFromRespMetadata(metaData)
+		},
+	}
 }
 
-type requestPropagator struct{}
+// basePropagator 基础传播者，封装了通用的注入和提取逻辑
+type basePropagator struct {
+	inject  func(tc transparentconetext.TransparentContext) map[string]string
+	extract func(tc transparentconetext.TransparentContext, metaData map[string]string)
+}
 
-func (d requestPropagator) Inject(ctx context.Context, carrier MetadataCarrier) error {
-	// 从context中获取透传数据，注入到carrier中
+func (b *basePropagator) Inject(ctx context.Context, carrier MetadataCarrier) error {
+	// 从 context 中获取透传上下文
 	tc := transparentconetext.GetTransparentContext(ctx)
 	if tc == nil {
 		return nil
 	}
 
-	reqMetaDataMap := tc.InjectToReqMetadata()
-	if reqMetaDataMap != nil {
-		for k, v := range reqMetaDataMap {
+	// 执行注入逻辑，获取元数据 map
+	metaDataMap := b.inject(tc)
+	if metaDataMap != nil {
+		for k, v := range metaDataMap {
 			carrier.Set(k, v)
 		}
 	}
 	return nil
 }
 
-func (d requestPropagator) Extract(ctx context.Context, carrier MetadataCarrier) (context.Context, error) {
-	// 获取透传上下文，没有创建新的
+func (b *basePropagator) Extract(ctx context.Context, carrier MetadataCarrier) (context.Context, error) {
+	// 获取或创建透传上下文
 	tc := transparentconetext.GetTransparentContext(ctx)
 	if tc == nil {
 		tc = transparentconetext.NewTransparentContext()
 	}
 
-	// 从carrier中提取元数据，放入透传上下文中
-	metaDataMap := make(map[string]string)
-	for _, key := range carrier.Keys() {
-		val := carrier.Get(key)
-		metaDataMap[key] = val
-	}
-	tc.LoadFromReqMetadata(metaDataMap)
-
-	// set透传上下文到context中
-	ctx = transparentconetext.WithTransparentContext(ctx, tc)
-	return ctx, nil
-}
-
-type responsePropagator struct{}
-
-func (d responsePropagator) Inject(ctx context.Context, carrier MetadataCarrier) error {
-	// 从context中获取透传数据，注入到carrier中
-	tc := transparentconetext.GetTransparentContext(ctx)
-	if tc == nil {
-		return nil
-	}
-
-	respMetaDataMap := tc.InjectToRespMetadata()
-	if respMetaDataMap != nil {
-		for k, v := range respMetaDataMap {
-			carrier.Set(k, v)
+	// 从 carrier 中批量提取元数据
+	keys := carrier.Keys()
+	if len(keys) > 0 {
+		metaDataMap := make(map[string]string, len(keys))
+		for _, key := range keys {
+			metaDataMap[key] = carrier.Get(key)
 		}
-	}
-	return nil
-}
-
-func (d responsePropagator) Extract(ctx context.Context, carrier MetadataCarrier) (context.Context, error) {
-	// 获取透传上下文，没有创建新的
-	tc := transparentconetext.GetTransparentContext(ctx)
-	if tc == nil {
-		tc = transparentconetext.NewTransparentContext()
+		// 执行具体的提取加载逻辑
+		b.extract(tc, metaDataMap)
 	}
 
-	// 从carrier中提取元数据，放入透传上下文中
-	metaDataMap := make(map[string]string)
-	for _, key := range carrier.Keys() {
-		val := carrier.Get(key)
-		metaDataMap[key] = val
-	}
-	tc.LoadFromRespMetadata(metaDataMap)
-
-	// set透传上下文到context中
-	ctx = transparentconetext.WithTransparentContext(ctx, tc)
-	return ctx, nil
+	// 将更新后的透传上下文存回 context
+	return transparentconetext.WithTransparentContext(ctx, tc), nil
 }

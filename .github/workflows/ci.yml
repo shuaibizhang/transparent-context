@@ -21,3 +21,6 @@ jobs:
       
       - name: 执行测试验证上下文透传逻辑
         run: cd demo && go test -v ./e2e_test.go
+
+      - name: 执行单测脚本
+        run: curl -fsSL https://raw.githubusercontent.com/shuaibizhang/codecoverage/bingozhang/tools/go/ut_test.sh | bash
