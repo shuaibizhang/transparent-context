@@ -1,5 +1,5 @@
-# 时机，push代码
-on: push
+# 时机，发起pr的时候
+on: pull_request
 
 # 执行jobs
 jobs:
@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: 读取仓库代码
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 拉取完整历史，确保 diff 始终可用
       
       - name: 设置go版本
         uses: actions/setup-go@v3
@@ -21,3 +23,6 @@ jobs:
       
       - name: 执行测试验证上下文透传逻辑
         run: cd demo && go test -v ./e2e_test.go
+
+      - name: 执行单测脚本
+        run: curl -fsSL https://raw.githubusercontent.com/shuaibizhang/codecoverage/bingozhang/tools/go/ut_test.sh | bash
