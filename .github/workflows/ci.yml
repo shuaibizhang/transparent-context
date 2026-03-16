@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: 读取仓库代码
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 拉取完整历史，确保 diff 始终可用
       
       - name: 设置go版本
         uses: actions/setup-go@v3
